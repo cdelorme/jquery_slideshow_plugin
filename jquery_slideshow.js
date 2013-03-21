@@ -36,10 +36,14 @@
 
 	ns.transition = function() {
 		var self = this;
-		this.stop().fadeOut(this.trans, function() {
+		if (this.trans) {
+			this.stop().fadeOut(this.trans, function() {
+				self.attr('src', self.ss[self.current].image);
+				self.stop().fadeIn(self.trans);
+			});
+		} else {
 			self.attr('src', self.ss[self.current].image);
-			self.stop().fadeIn(self.trans);
-		});
+		}
 	};
 
 
