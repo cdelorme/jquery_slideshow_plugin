@@ -17,7 +17,6 @@
 		obj.addClass('display');
 		obj.html(this.ss[this.current].image);
 		this.before(obj);
-		// obj.stop().fadeOut(1000, function() {
 		obj.fadeOut(1000, function() {
 			$(this).remove();
 		});
@@ -28,7 +27,6 @@
 		obj.addClass('action');
 		obj.html(action);
 		this.after(obj);
-		// obj.stop().fadeOut(1000, function() {
 		obj.fadeOut(1000, function() {
 			$(this).remove();
 		});
