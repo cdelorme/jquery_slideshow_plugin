@@ -5,42 +5,50 @@
 
 
 	// Properties
+	ns.options = {
+		delay: 4000,
+		trans: 200
+	};
 	ns.current = -1;
-	ns.delay = 4000;
-	ns.trans = 200;
+	ns.ss;
+	ns.images = [];
 
 
 	/* Animations */
 
 	ns.display = function() {
-		var obj = $('<div>');
-		obj.addClass('display');
-		obj.html(this.ss[this.current].image);
-		this.before(obj);
-		obj.fadeOut(1000, function() {
-			$(this).remove();
-		});
+		if (this.ss && this.images[this.ss]) {
+			var obj = $('<div>');
+			obj.addClass('display');
+			obj.html(this.images[this.ss][this.current].image);
+			this.before(obj);
+			obj.fadeOut(1000, function() {
+				$(this).remove();
+			});
+		}
 	};
 
 	ns.action = function(action) {
-		var obj = $('<div>');
-		obj.addClass('action');
-		obj.html(action);
-		this.after(obj);
-		obj.fadeOut(1000, function() {
-			$(this).remove();
-		});
+		if (this.ss && this.images[this.ss]) {
+			var obj = $('<div>');
+			obj.addClass('action');
+			obj.html(action);
+			this.after(obj);
+			obj.fadeOut(1000, function() {
+				$(this).remove();
+			});
+		}
 	};
 
 	ns.transition = function() {
 		var self = this;
-		if (this.trans) {
-			this.stop().fadeOut(this.trans, function() {
-				self.attr('src', self.ss[self.current].image);
+		if (this.options.trans) {
+			this.stop().fadeOut(this.options.trans, function() {
+				self.attr('src', self.images[self.ss][self.current].image);
 				self.stop().fadeIn(self.trans);
 			});
 		} else {
-			self.attr('src', self.ss[self.current].image);
+			self.attr('src', self.images[self.ss][self.current].image);
 		}
 	};
 
@@ -48,17 +56,27 @@
 	/* Keyboard Controls */
 
 	ns.forward = function() {
-		this.current++;
-		if (this.current >= this.ss.length) this.current = 0;
-		this.restart();
-		this.transition();
+		if (this.ss && this.images[this.ss]) {
+			this.current++;
+			if (this.current >= this.images[this.ss].length) {
+				if (this.changeSS) {
+					this.ss = this.changeSS;
+					delete this.changeSS;
+				}
+				this.current = 0;
+			}
+			this.restart();
+			this.transition();
+		}
 	};
 
 	ns.backward = function() {
-		this.current--;
-		if (this.current < 0) this.current = this.ss.length - 1;
-		this.restart();
-		this.transition();
+		if (this.ss && this.images[this.ss]) {
+			this.current--;
+			if (this.current < 0) this.current = this.images[this.ss].length - 1;
+			this.restart();
+			this.transition();
+		}
 	};
 
 	ns.toggle = function() {
@@ -113,68 +131,94 @@
 	};
 
 	ns.restart = function() {
-		this.clear();
-		var self = this;
-		this.interval = setTimeout(function() {
-				delete self.interval;
-				self.start();
-			},
-			this.ss[this.current].delay
-		);
+		if (this.ss && this.images[this.ss]) {
+			this.clear();
+			var self = this;
+			this.interval = setTimeout(function() {
+					delete self.interval;
+					self.start();
+				},
+				this.images[this.ss][this.current].delay
+			);
+		}
 	};
 
 
 	/* Image Processing */
 
-	ns.generate = function() {
-		this.ss = [];
-		if (this.images) {
-			for (var img in this.images) {
-				if (this.images[img].image) {
-					this.ss.push({
-						image: this.images[img].image,
-						delay: this.images[img].delay ? this.images[img].delay : this.delay
+	ns.generate = function(images) {
+		var ret = [];
+
+		// Parse images to build standardized array
+		if (images) {
+			for (var i in images) {
+				if (images[i].image) {
+					ret.push({
+						image: images[i].image,
+						delay: images[i].delay ? images[i].delay : this.options.delay
 					});
-				} else if (this.images[img].range) {
-					if (this.images[img].range.start && this.images[img].range.end && this.images[img].range.type) {
-						for (var i = this.images[img].range.start; i <= this.images[img].range.end; i++) {
-							this.ss.push({
-								image: (this.images[img].range.prefix ? this.images[img].range.prefix : '') + i + this.images[img].range.type,
-								delay: this.images[img].range.delays && this.images[img].range.delays.number == i ? this.images[img].range.delays.delay : this.images[img].delay ? this.images[img].delay : this.delay
+				} else if (images[i].range) {
+					if (images[i].range.start && images[i].range.end && images[i].range.type) {
+						for (var x = images[i].range.start; x <= images[i].range.end; x++) {
+							ret.push({
+								image: (images[i].range.prefix ? images[i].range.prefix : '') + x + images[i].range.type,
+								delay: images[i].delay ? images[i].delay : this.options.delay
 							});
 						}
 					}
 				} else {
-					this.ss.push({
-						image: this.images[img],
-						delay: this.delay
+					ret.push({
+						image: images[i],
+						delay: this.options.delay
 					});
 				}
 			}
 		}
-		return this.ss && this.ss.length > 1
-	}
 
-	ns.preload = function() {
-		for (var img in this.ss) {
-			(new Image()).src = this.ss[img].image;
+		// Preload if length exists
+		if (ret.length) this.preload(ret);
+
+		// Return anything larger than 1
+		return ret.length <= 1 || ret;
+	};
+
+	ns.preload = function(images) {
+		for (var i in images) {
+			(new Image()).src = images[i].image;
 		}
 	};
 
 
 	/* Initialization & Accessibility */
 
-	ns.init = function() {
-		if (this.generate()) {
-			this.preload(this.ss);
-			this.controls();
+	ns.changeTo = function(name) {
+		if (this.images[name]) {
+			this.changeSS = name;
+		}
+	};
+
+	ns.changeNow = function(name) {
+		if (this.images[name]) {
+			this.clear();
+			this.current = -1;
+			this.ss = name;
 			this.start();
 		}
 	};
 
-	$.fn.ss = function(params) {
-		$.extend(true, this, ns, params);
-		this.init();
+	ns.addImages = function(show, images) {
+		this.images[show] = this.generate(images);
+	};
+
+	$.fn.ss = ns.init = function(params) {
+		$.extend(true, this, ns, { options: params });
+		this.controls();
+		if (params.images) {
+			delete this.options.images;
+			this.ss = 1;
+			this.images[1] = this.generate(params.images);
+			this.start();
+		}
 		return this;
 	};
 
