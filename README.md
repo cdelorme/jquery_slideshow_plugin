@@ -110,6 +110,8 @@ Complex example demonstrating empty instantiation, loading multiple named sets, 
 
 An optional loop parameter with a default of true to override the system so that the slideshow stops at the end.
 
+Missing transition override per named slideshow, currently only accepts global override.  This may or may not be implemented, depends on necessity.
+
 Cue system to accept a line of waiting-transitions of loaded slideshows by name for more complex animation implementations.
 
 Mobile controls and interfacing.
