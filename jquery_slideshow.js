@@ -7,11 +7,17 @@
 	// Properties
 	ns.options = {
 		delay: 4000,
-		trans: 200
+		trans: 200,
+		loop: true,
+		type: 'img'
 	};
-	ns.current = -1;
+	ns.current = 0;
 	ns.ss;
 	ns.images = [];
+	ns.callbacks = {
+		'complete': [],
+		'ready': []
+	};
 
 
 	/* Animations */
@@ -20,7 +26,7 @@
 		if (this.ss && this.images[this.ss]) {
 			var obj = $('<div>');
 			obj.addClass('display');
-			obj.html(this.images[this.ss][this.current].image);
+			obj.html(this.attr('src'));
 			this.before(obj);
 			obj.fadeOut(1000, function() {
 				$(this).remove();
@@ -43,8 +49,9 @@
 	ns.transition = function() {
 		var self = this;
 		if (this.options.trans) {
+			var img = this.current;
 			this.stop().fadeOut(this.options.trans, function() {
-				self.attr('src', self.images[self.ss][self.current].image);
+				self.attr('src', self.images[self.ss][img].image);
 				self.stop().fadeIn(self.trans);
 			});
 		} else {
@@ -57,16 +64,17 @@
 
 	ns.forward = function() {
 		if (this.ss && this.images[this.ss]) {
-			this.current++;
-			if (this.current >= this.images[this.ss].length) {
-				if (this.changeSS) {
-					this.ss = this.changeSS;
-					delete this.changeSS;
-				}
-				this.current = 0;
-			}
-			this.restart();
 			this.transition();
+			if (this.current >= this.images[this.ss].length - 1) {
+				if (this.options.loop) {
+					this.current = 0;
+					this.restart();
+				}
+				this.triggerHandler('complete');
+			} else {
+				this.current++;
+				this.restart();
+			}
 		}
 	};
 
@@ -112,6 +120,16 @@
 		});
 		$(document).on("mousemove", function() {
 			self.display();
+		});
+
+		// Callback on-complete
+		this.on('complete', function() {
+			// Check complete callback(s)
+		});
+
+		// Callback on-ready
+		this.on('ready', function() {
+			// Check ready callback(s)
 		});
 
 	};

@@ -13,12 +13,13 @@ Controls:
 - Space to pause or continue
 - Arrow keys move forwards and backwards
 
-Made the fading transition optional, simply set it to 0 or false to override.
+Possible to turn off transition animation by setting `trans` to 0 or false as an option on creation.  Also loop is now optional and can be set to false in the same way as trans.
 
 Implemented multiple named slideshow loading system, allows multiple sets of images (such as for animations) to be loaded separately by name, accepting the same format as the original instantiation process, and allowing instantiation to occur without any images as well.
 
 Two methods to switch between loaded slideshows, one to change immediately and the other to change when the current slideshow set has completed allowing for a smooth transition.
 
+**Change on complete is temporarily broken while implementing new callbacks system.**
 
 ### Examples:
 
@@ -108,12 +109,22 @@ Complex example demonstrating empty instantiation, loading multiple named sets, 
 
 ### Missing / Planned Features:
 
-An optional loop parameter with a default of true to override the system so that the slideshow stops at the end.
+Major Updates coming:
 
-Missing transition override per named slideshow, currently only accepts global override.  This may or may not be implemented, depends on necessity.
+- Implementation of callbacks for complete & ready
+- Advance auto-loader to global storage and image pool with load events
+	- Allow progress tracking via load events
+	- Use local counter to check complete
+	- Store image full path strings in namespace statically
+- Separation of transition and add-images logic for future canvas implementation
+- Separate timer as single namespace interval for all instances
+	- Use GCD Calc for timing
+	- Allow callbacks to be added
 
-Cue system to accept a line of waiting-transitions of loaded slideshows by name for more complex animation implementations.
+Not yet sure where to place the logic to override the trans value per set of named slides.  This might become something that can be placed per-slide like the delay.
 
-Mobile controls and interfacing.
+A cue system to accept actions in-order might be somewhat difficult to implement.  Logic to turn the addEventOnComplete to access a stack of arrays and not just an array might be confusing for general use, so still mulling over the options.
 
-Image size controls, ideally these should be controlled through CSS but this may be added as a feature if I need it at some point or upon request.
+Mobile controls and orientation are not yet implemented.
+
+While image sizes should ideally be controlled via css, with the upcoming Canvas implementation the option to control image size via JavaScript may be added.
